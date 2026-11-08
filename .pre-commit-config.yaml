@@ -1,0 +1,11 @@
+# Optional locally: `uv run pre-commit install` (pre-commit is not pinned in deps; `tasks.py lint` runs ruff directly).
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.4
+    hooks:
+      - id: ruff
+      - id: ruff-format
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout

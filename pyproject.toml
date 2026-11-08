@@ -1,0 +1,72 @@
+[project]
+name = "edge-autopsy"
+version = "0.1.0"
+description = "Honest ML return forecasting with purged walk-forward backtesting: where does the edge die?"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12,<3.13"
+# Pins from PLAN §4 (versions verified on PyPI, N31). pyyaml/matplotlib were unpinned
+# in the plan; pinned here to the latest release on 2026-11-07.
+dependencies = [
+    "numpy==2.5.4",
+    "pandas==3.1.1",
+    "scikit-learn==1.9.1",
+    "xgboost==3.4.1",
+    "torch==2.15.0",
+    "skfolio==1.12.7",
+    "arch==8.0.0",
+    "statsmodels==0.15.0",
+    "pyarrow==26.0.1",
+    "pydantic==2.14.3",
+    "pyyaml==6.0.3",
+    "yfinance==1.8.0",
+    "plotly==7.1.0",
+    "matplotlib==3.11.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.2.0",
+    "hypothesis==6.170.15",
+    "ruff==0.17.4",
+    "quantstats==0.0.86",   # cross-check only, in tests (S40)
+]
+app = [
+    "streamlit==1.67.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/edge_autopsy"]
+
+# CPU-only torch wheels on Linux/Windows (PLAN §4: "torch 2.15.0 (CPU wheel)").
+# Without this, Linux resolves the CUDA build (several GB of nvidia-* wheels).
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform != 'darwin'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "slow: long-running tests (excluded from `tasks.py test`)",
+    "network: needs internet (excluded from `tasks.py test`)",
+    "data: needs local data/raw files (skipped if missing)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "NPY", "PD"]
+# PD010: pivot_table silently aggregates duplicate keys; pivot raises on them. We want the raise.
+ignore = ["PD010"]

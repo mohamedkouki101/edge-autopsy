@@ -1,0 +1,60 @@
+# Every global choice lives here (PLAN §4). Experiment YAMLs use `inherits: ../base.yaml`
+# and override only what they change. Values cite the PLAN section they come from.
+name: base
+universe: ff49
+seed: 20261106            # PLAN §4 Seeds
+rebalance_freq: W-FRI     # last trading day of each week (PLAN §3.3)
+horizon: 5                # label = 5 trading days after the fill (PLAN §3.2)
+lag: 1                    # signal at close t, fill at close t+1 (PLAN §3.2, K1)
+
+data:
+  french_base_url: https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/
+  french_files:           # PLAN §5.1, D1
+    ind49_daily: 49_Industry_Portfolios_daily_CSV.zip
+    ff3_daily: F-F_Research_Data_Factors_daily_CSV.zip
+    mom_daily: F-F_Momentum_Factor_daily_CSV.zip
+  etf_tickers: [XLB, XLE, XLF, XLI, XLK, XLP, XLU, XLV, XLY]   # original nine (N18; checked in D4)
+  etf_benchmark: SPY
+  etf_start: 1998-12-01
+  etf_first_date_max: 1999-01-04
+  sample_floor: 1963-07-01  # D3 decision 2026-11-07 (Kouki): drop thin 1926-63 portfolios; CLAUDE.md §4
+  sample_start: 1963-07-05      # written by D3: first rebalance >= sample_floor with >= min_industries available
+  sample_end: 2026-09-30  # latest French table (N15); confirmed against the download in D1
+  min_industries: 30
+  entry_days: 253         # PLAN §5.3 rule 4
+  max_abs_ret_flag: 0.5   # PLAN §5.3 rule 6 (flag, not drop)
+
+features:                 # PLAN §5.4 (used from M1)
+  momentum_windows: [5, 21, 63, 126, 252]
+  mom_12_1: [252, 21]
+  vol_windows: [21, 63]
+  beta_window: 252
+  mdd_window: 63
+  skew_window: 21
+  market_window: 21
+
+split:                    # PLAN §5.5
+  scheme: expanding
+  dev_test_start: 1980-01-01
+  dev_test_end: 2016-12-31
+  holdout_start: 2017-01-02
+  holdout_end: 2026-09-30
+  min_train_years: 10
+  rolling_years: 10
+  refit_every: 52
+  purge_days: 6
+  embargo_weeks: 1
+  inner_folds: 3
+  inner_fold_years: 1
+
+portfolio:                # PLAN §5.6
+  kind: long_only
+  quantile: 0.2
+  weighting: equal
+  band: null
+
+costs:                    # PLAN §5.6 (base 10 bps/side = 5 + 5; U10 Unverified)
+  spread_bps: 5
+  slippage_bps: 5
+  borrow_bps: 25
+  grid_bps: [0, 2, 5, 10, 25, 50]

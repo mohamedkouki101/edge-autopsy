@@ -1,0 +1,24 @@
+# Data: never commit raw or processed data (PLAN §5.1 licence column).
+data/*
+!data/README.md
+# Environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.ipynb_checkpoints/
+*.egg-info/
+build/
+dist/
+# Secrets
+.env
+*.key
+secrets*
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
