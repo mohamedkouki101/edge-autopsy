@@ -9,7 +9,6 @@ does the apparent edge die?
 will lead with the result, in plain words, once the sealed hold-out is opened
 (task H2). Until then there are no performance numbers here, by design.
 
-See `CLAUDE.md` for how to set up, run tests and build the data.
 
 ## Disclaimer
 
