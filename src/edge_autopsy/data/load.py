@@ -1,7 +1,8 @@
 """Load one universe from panel.parquet as wide frames, never past `end` (task B5).
 
-Before P9 the hold-out must be unreachable: asking for any date >= holdout_start raises.
-V3 adds holdout_guard() (git tag + UNSEAL=I_ACCEPT) as the only way through.
+Before P9 the hold-out must be unreachable: asking for any date >= holdout_start calls
+`splits.holdout_guard()` (V3), which raises unless UNSEAL=I_ACCEPT and the pre-registration
+still matches its lock.
 """
 
 from __future__ import annotations
@@ -11,9 +12,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from edge_autopsy.splits import HoldoutSealedError, holdout_guard
 
-class HoldoutSealedError(PermissionError):
-    """Raised when code asks for hold-out data before it is unsealed."""
+__all__ = ["HoldoutSealedError", "Universe", "load_universe"]
 
 
 @dataclass(frozen=True)
@@ -30,10 +31,7 @@ def load_universe(
 ) -> Universe:
     end, holdout_start = pd.Timestamp(end), pd.Timestamp(holdout_start)
     if end >= holdout_start:
-        raise HoldoutSealedError(
-            f"requested data up to {end:%Y-%m-%d}, but the hold-out starts "
-            f"{holdout_start:%Y-%m-%d} and is sealed until P9"
-        )
+        holdout_guard()  # raises HoldoutSealedError unless unsealed (P9 only)
     df = pd.read_parquet(panel_path, filters=[("universe", "==", universe), ("date", "<=", end)])
     df = df[df["date"] <= end]  # belt and braces: never trust a filter alone
     piv = lambda col: df.pivot(index="date", columns="asset", values=col)  # noqa: E731

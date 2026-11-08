@@ -79,3 +79,11 @@ def test_label_kind_is_validated(tmp_path):
     raw["label"] = "five_day_ish"
     with pytest.raises(ValueError):
         load_config(_write(tmp_path, "bad_label.yaml", raw))
+
+
+def test_purge_must_cover_the_whole_label_window(tmp_path):
+    """K3: a label ends up to lag + horizon trading days after t; a shorter purge leaks."""
+    raw = yaml.safe_load(BASE.read_text(encoding="utf-8"))
+    raw["horizon"] = 10  # purge_days stays 6 < 1 + 10
+    with pytest.raises(ValueError, match="purge_days"):
+        load_config(_write(tmp_path, "short_purge.yaml", raw))

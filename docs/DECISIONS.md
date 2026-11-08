@@ -34,3 +34,37 @@ Dated record of every "why X not Y". The canonical, running log lives in `CLAUDE
   the max difference is 0.0. The fixed 5-day label stays available (`label: fixed_horizon`)
   for daily-sampled diagnostics such as leak lab L5. Baseline IC changes slightly
   (momentum 0.0378 → 0.0361, t 5.55 → 5.38); portfolio metrics are unchanged.
+
+## P3 (2026-11-08)
+
+- **Git-free provenance (Kouki: no git in AI sessions).** Runs carry `code_hash` (sha256 of src/,
+  configs/, pyproject.toml, uv.lock, tasks.py; CRLF→LF) instead of git commit/dirty. The
+  pre-registration is frozen by a sha256 in `PREREGISTRATION.lock`, not a `prereg-v1` tag; the
+  public timestamp is Kouki's push of that file.
+- **V2 purge rule, exactly.** A sample dated t has label end = the trading day `purge_days`
+  (= lag + horizon = 6) after t. A training sample before a test block is kept only if its
+  label end is strictly before the first test date (K3); a label end past the available data
+  counts as overlapping. Training samples after a block (inner folds, CPCV) are purged up to the
+  last test label end and embargoed for `embargo_weeks` × 5 more trading days. The config
+  refuses `purge_days < lag + horizon`.
+- **Refit blocks count rebalances (52), as PLAN §5.5 says**, rather than calendar years. They
+  drift about a week per year, giving 38 dev folds, the last one 7 weeks long. Every dev week is
+  tested exactly once either way.
+- **V3 hold-out guard, git-free.** `holdout_guard()` opens the hold-out only if UNSEAL is exactly
+  `I_ACCEPT` and `PREREGISTRATION.md` still matches its lock (instead of "the `prereg-v1` tag
+  exists"). This is stricter than the tag check: a tag can exist while the file has been edited
+  since. The loader, the hold-out walk-forward and hold-out log rows all go through it.
+- **V4 inner folds are forward-only.** PLAN §5.5 says "the last 3 years are split into 3 one-year
+  inner validation folds (each purged)" without saying whether training may include dates after
+  a validation year. We train each inner fold only on dates before it (like the outer
+  walk-forward), so the model never learns from the future relative to what it is scored on.
+  Ties in mean inner IC go to the first config in the declared grid; a config with an undefined
+  IC (constant predictions) can never be chosen.
+- **V5 one pipeline for every model.** `run_experiment` takes a rule model (scores from data
+  <= t) or a learned model (walk-forward + nested tuning + refit) and runs both through the same
+  portfolio, backtest, metrics and log code as the B5 baselines. Check: B2-B4 rerun through it
+  reproduce their logged rows exactly. Learned models train on the demeaned label
+  (PREREGISTRATION §3) of available assets only, and hold positions only on test dates.
+- **Trial accounting logged both ways.** Each row has `n_inner_trials` (configs compared) and
+  `n_inner_fits` (folds x configs x inner folds). Which one enters the Deflated Sharpe N is
+  decided in P8 and disclosed; logging both means no rerun is needed.

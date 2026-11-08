@@ -88,6 +88,34 @@ def task_prereg(_: argparse.Namespace) -> int:
     return 0
 
 
+def task_splits(_: argparse.Namespace) -> int:
+    """V2: print the purged walk-forward folds on the dev period (expanding and rolling)."""
+    from edge_autopsy.config import load_config
+    from edge_autopsy.data.calendar import rebalance_dates
+    from edge_autopsy.data.load import load_universe
+    from edge_autopsy.splits import split_diagram, walk_forward
+
+    cfg = load_config(ROOT / "configs" / "base.yaml")
+    sp = cfg.split
+    u = load_universe(
+        ROOT / "data" / "processed" / "panel.parquet",
+        cfg.universe,
+        end=sp.dev_test_end,
+        holdout_start=sp.holdout_start,
+    )
+    days = u.returns.index
+    weekly = rebalance_dates(days, cfg.rebalance_freq)
+    weekly = weekly[weekly >= str(cfg.data.sample_start)]
+    for scheme in ("expanding", "rolling"):
+        folds = walk_forward(weekly, days, sp.model_copy(update={"scheme": scheme}))
+        print(
+            f"\n== {scheme}: {len(folds)} folds, refit every {sp.refit_every} rebalances, "
+            f"purge {sp.purge_days} trading days, embargo {sp.embargo_weeks} week(s) =="
+        )
+        print(split_diagram(folds))
+    return 0
+
+
 TASKS = {
     "setup": task_setup,
     "test": task_test,
@@ -96,6 +124,7 @@ TASKS = {
     "data": task_data,
     "baselines": task_baselines,
     "prereg": task_prereg,
+    "splits": task_splits,
 }
 
 

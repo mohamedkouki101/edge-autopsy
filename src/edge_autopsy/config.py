@@ -102,6 +102,16 @@ class ExperimentCfg(_Strict):
     portfolio: PortfolioCfg
     costs: CostCfg
 
+    @model_validator(mode="after")
+    def _purge_covers_label(self) -> ExperimentCfg:
+        # A label ends up to lag + horizon trading days after its date (K3, PLAN §5.5).
+        if self.split.purge_days < self.lag + self.horizon:
+            raise ValueError(
+                f"split.purge_days={self.split.purge_days} < lag + horizon = "
+                f"{self.lag + self.horizon}: training labels would overlap the test block"
+            )
+        return self
+
 
 def _deep_merge(base: dict[str, Any], over: dict[str, Any]) -> dict[str, Any]:
     out = dict(base)
