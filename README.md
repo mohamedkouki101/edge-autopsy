@@ -8,9 +8,6 @@ does the apparent edge die?
 **Status: under construction (build phase P1, Data). No results yet.** This README
 will lead with the result, in plain words, once the sealed hold-out is opened
 (task H2). Until then there are no performance numbers here, by design.
-
-See `CLAUDE.md` for how to set up, run tests and build the data.
-
 ## Disclaimer
 
 Educational and research project. All performance figures produced by this code are
