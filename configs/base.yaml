@@ -4,7 +4,8 @@ name: base
 universe: ff49
 seed: 20261106            # PLAN §4 Seeds
 rebalance_freq: W-FRI     # last trading day of each week (PLAN §3.3)
-horizon: 5                # label = 5 trading days after the fill (PLAN §3.2)
+horizon: 5                # label window after the fill: max holding period (PLAN §3.2)
+label: holding_period     # fill t+1 -> next fill; = what the strategy earns (DECISIONS 2026-11-08)
 lag: 1                    # signal at close t, fill at close t+1 (PLAN §3.2, K1)
 
 data:

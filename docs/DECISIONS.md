@@ -14,3 +14,23 @@ Dated record of every "why X not Y". The canonical, running log lives in `CLAUDE
 - **CPU-only torch; uv lock; tasks.py runner** (Windows has no make).
 - **Strict configs** (`extra="forbid"`) and a key-order-independent `config_hash`.
 - **Data revisions can't move the sample silently** (sha256 manifest, archived old files, diff report, sample_start guard).
+
+## P2 (2026-11-08)
+
+- **Own engine, every timing rule tested and mutation-tested.** A planted same-bar leak, turnover
+  measured against targets instead of drifted weights, borrow charged on the fill day, cost
+  charged a day late and a disabled band rule: each is caught by a specific test.
+- **Metrics match QuantStats exactly** (Sharpe, Sortino, vol, MDD; diff 0.0) and the textbook formulas.
+- **The hold-out is unreachable from P2 code**: the loader raises for any date ≥ 2017-01-02.
+- **First numbers (dev 1980–2016, 10 bps):** see CLAUDE.md §5. Industry momentum beats equal-weight
+  buy-and-hold gross (0.650 vs 0.520) and keeps a smaller lead net (0.582 vs 0.518); 1-week reversal
+  dies on costs (0.554 → 0.149).
+- **Label = holding period (decision 2026-11-08, Kouki).** PLAN §3.2 says the label is "the 5-day
+  return starting at the fill, so the model learns exactly what the strategy earns". Those two
+  halves disagree in the 17.2 % of weeks with fewer than 5 trading days (holidays). We kept the
+  second half: the label at rebalance t is the compounded return from the fill at close t+1 to
+  the next fill. `horizon = 5` is now the maximum hold (the code raises if exceeded), so the
+  6-day purge (PLAN §5.5) is unchanged. A test checks label = backtest earnings; on real dev data
+  the max difference is 0.0. The fixed 5-day label stays available (`label: fixed_horizon`)
+  for daily-sampled diagnostics such as leak lab L5. Baseline IC changes slightly
+  (momentum 0.0378 → 0.0361, t 5.55 → 5.38); portfolio metrics are unchanged.

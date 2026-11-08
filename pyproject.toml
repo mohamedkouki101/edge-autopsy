@@ -69,4 +69,5 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "NPY", "PD"]
 # PD010: pivot_table silently aggregates duplicate keys; pivot raises on them. We want the raise.
-ignore = ["PD010"]
+# PD013: stack(future_stack=True) keeps NaN rows explicitly and yields the (date, asset) index.
+ignore = ["PD010", "PD013"]

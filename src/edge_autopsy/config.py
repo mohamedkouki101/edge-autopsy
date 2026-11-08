@@ -93,6 +93,9 @@ class ExperimentCfg(_Strict):
     rebalance_freq: str
     horizon: int = Field(ge=1)
     lag: int = Field(ge=0)
+    # holding_period: fill-to-next-fill return (max `horizon` days); fixed_horizon: always
+    # `horizon` days after the fill. Decision 2026-11-08 (docs/DECISIONS.md).
+    label: Literal["holding_period", "fixed_horizon"]
     data: DataCfg
     features: FeatureCfg
     split: SplitCfg

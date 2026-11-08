@@ -43,12 +43,45 @@ def task_data(args: argparse.Namespace) -> int:
     return 0
 
 
+def task_baselines(_: argparse.Namespace) -> int:
+    """B5: baselines B0-B4 on the dev period (<= 2016-12-31); appends to experiments.jsonl."""
+    from edge_autopsy.baselines_dev import run_baselines
+    from edge_autopsy.config import load_config
+    from edge_autopsy.data.download import manifest_hash
+
+    cfg = load_config(ROOT / "configs" / "base.yaml")
+    rows = run_baselines(
+        cfg,
+        ROOT / "data" / "processed" / "panel.parquet",
+        ROOT / "experiments.jsonl",
+        ROOT / "results",
+        data_version=manifest_hash(ROOT / "data" / "raw"),
+    )
+    cols = [
+        "model",
+        "sharpe_gross",
+        "sharpe_net",
+        "ann_return_net",
+        "ann_vol",
+        "mdd",
+        "turnover_ann",
+        "hit_rate_vs_b0",
+        "ic_mean",
+        "ic_t_nw",
+    ]
+    print(" | ".join(cols))
+    for r in rows:
+        print(" | ".join(f"{r[c]:.4f}" if isinstance(r[c], float) else str(r[c]) for c in cols))
+    return 0
+
+
 TASKS = {
     "setup": task_setup,
     "test": task_test,
     "test-all": task_test_all,
     "lint": task_lint,
     "data": task_data,
+    "baselines": task_baselines,
 }
 
 

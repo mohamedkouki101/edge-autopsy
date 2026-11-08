@@ -66,8 +66,16 @@ def test_base_matches_plan_values():
     assert isinstance(c, ExperimentCfg)
     assert c.seed == 20261106
     assert (c.horizon, c.lag) == (5, 1)
+    assert c.label == "holding_period"  # decision 2026-11-08 (Option B)
     assert str(c.split.holdout_start) == "2017-01-02"
     assert (c.split.purge_days, c.split.embargo_weeks, c.split.refit_every) == (6, 1, 52)
     assert c.costs.spread_bps + c.costs.slippage_bps == 10
     assert c.costs.borrow_bps == 25
     assert c.costs.grid_bps == [0, 2, 5, 10, 25, 50]
+
+
+def test_label_kind_is_validated(tmp_path):
+    raw = yaml.safe_load(BASE.read_text(encoding="utf-8"))
+    raw["label"] = "five_day_ish"
+    with pytest.raises(ValueError):
+        load_config(_write(tmp_path, "bad_label.yaml", raw))
