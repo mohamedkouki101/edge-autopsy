@@ -75,6 +75,19 @@ def task_baselines(_: argparse.Namespace) -> int:
     return 0
 
 
+def task_prereg(_: argparse.Namespace) -> int:
+    """V1: check PREREGISTRATION.md against PREREGISTRATION.lock (fails on any edit)."""
+    from edge_autopsy.prereg import PreregError, verify
+
+    try:
+        h = verify(ROOT / "PREREGISTRATION.md", ROOT / "PREREGISTRATION.lock")
+    except PreregError as e:
+        print(f"NOT verified: {e}")
+        return 1
+    print(f"PREREGISTRATION.md verified: sha256 {h}")
+    return 0
+
+
 TASKS = {
     "setup": task_setup,
     "test": task_test,
@@ -82,6 +95,7 @@ TASKS = {
     "lint": task_lint,
     "data": task_data,
     "baselines": task_baselines,
+    "prereg": task_prereg,
 }
 
 

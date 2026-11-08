@@ -8,6 +8,12 @@ does the apparent edge die?
 **Status: under construction (build phase P1, Data). No results yet.** This README
 will lead with the result, in plain words, once the sealed hold-out is opened
 (task H2). Until then there are no performance numbers here, by design.
+## Pre-registration
+
+Hypotheses, thresholds, dates and model grids were frozen on 2026-11-08, before any ML model
+was trained: [`PREREGISTRATION.md`](PREREGISTRATION.md), sha256 `12baff06bf23602267e02ab99ca1c6a68d621e9a9af16e2dd00491a390b08d1b`
+(recorded in `PREREGISTRATION.lock`; check with `uv run python tasks.py prereg`).
+
 ## Disclaimer
 
 Educational and research project. All performance figures produced by this code are

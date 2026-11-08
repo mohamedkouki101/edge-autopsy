@@ -1,0 +1,11 @@
+{
+  "file": "PREREGISTRATION.md",
+  "versions": [
+    {
+      "label": "v1",
+      "sha256": "12baff06bf23602267e02ab99ca1c6a68d621e9a9af16e2dd00491a390b08d1b",
+      "n_bytes": 13668,
+      "frozen_at": "2026-11-08T12:01:17Z"
+    }
+  ]
+}
