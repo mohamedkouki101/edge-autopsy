@@ -181,3 +181,25 @@ def test_holdout_phase_is_sealed_and_leaves_no_trace(panel, tmp_path, monkeypatc
 def test_unknown_phase_is_rejected(panel, tmp_path):
     with pytest.raises(ValueError, match="phase"):
         _run(MOMENTUM, panel, tmp_path, phase="final_final")
+
+
+def test_final_refit_uses_the_models_refit_params_hook(panel, tmp_path):
+    import dataclasses
+
+    made = []
+
+    def factory(params):
+        made.append(dict(params))
+        return OLS(params)
+
+    spec = dataclasses.replace(
+        LEARNED,
+        factory=factory,
+        configs=[{"cols": ["mom5"]}],
+        refit_params=lambda trial: {**trial["params"], "refit": len(trial["inner_ic"])},
+    )
+    row = _run(spec, panel, tmp_path, cfg=_cfg(LEARN_START))
+    refits = [p for p in made if "refit" in p]
+    assert len(refits) == row["split"]["n_folds"] and all(p["refit"] == 3 for p in refits)
+    trials = json.loads((tmp_path / row["results_path"] / "trials.json").read_text())
+    assert all(t["refit_params"] == {"cols": ["mom5"], "refit": 3} for t in trials)

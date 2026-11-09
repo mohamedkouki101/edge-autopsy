@@ -6,6 +6,12 @@
       "sha256": "12baff06bf23602267e02ab99ca1c6a68d621e9a9af16e2dd00491a390b08d1b",
       "n_bytes": 13668,
       "frozen_at": "2026-11-08T12:01:17Z"
+    },
+    {
+      "label": "amendment-1",
+      "sha256": "b6ca9ec52f425444dcb2f8bb6bda365b19bba24c9602c9d711b2d4f7fcd0b6df",
+      "n_bytes": 16119,
+      "frozen_at": "2026-11-08T19:57:08Z"
     }
   ]
 }

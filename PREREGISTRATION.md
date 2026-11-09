@@ -196,3 +196,40 @@ out day-of-week luck); hold-out start ±1 year (exploratory only, never used to 
 | B4 1-week reversal | 0.149 | 0.554 | 39.57 | 0.0140 | 2.66 |
 
 - No feature matrix had been built and no Ridge, XGBoost or LSTM had been fitted.
+
+## Amendment 1 (2026-11-08): feature count and exact feature definitions
+
+Made before any feature matrix was built and before any Ridge, XGBoost or LSTM model was
+fitted (task M1). The text above is unchanged; this section takes precedence where they differ.
+
+**Why.** §4 lists 11 per-asset features (cumulative return over 5, 21, 63, 126 and 252 days,
+12-1 momentum, realised volatility over 21 and 63 days, 252-day beta, 63-day maximum drawdown,
+21-day skewness) but labels them "(10)", and §7 calls the input a "13-feature vector". The
+count is wrong, not the list (PLAN §5.4 has the same slip). Decision (Kouki, 2026-11-08): keep
+all 11. The model input has **14 features: 11 per asset + 3 market-level**. Wherever this
+document says "10" per-asset features or a "13-feature vector", read 11 and 14.
+
+**Exact definitions** (r = daily simple return of the asset, m = market return
+(Mkt-RF) + RF; every window ends at close t, includes t, and uses trading days):
+
+| Feature | Definition |
+|---|---|
+| `ret_5`, `ret_21`, `ret_63`, `ret_126`, `ret_252` | compounded return over the last w days; missing unless all w returns are observed |
+| `mom_12_1` | compounded return over days t−251 … t−21 (same as baseline B3) |
+| `vol_21`, `vol_63` | sample standard deviation (ddof 1) of daily returns over w days |
+| `beta_252` | cov(r, m) / var(m) over the last 252 days, all observed |
+| `mdd_63` | maximum drawdown (≤ 0) of the compounded path over the last 63 days, starting from 1 at the window start |
+| `skew_21` | bias-corrected sample skewness of daily returns over 21 days |
+| `mkt_ret_21`, `mkt_vol_21` | `ret_21` and `vol_21` computed on m |
+| `disp_21` | cross-sectional standard deviation (ddof 1) of `ret_21` across assets with a value on t |
+
+**Normalisation.**
+- Per-asset features: on each date, rank (ties averaged) among assets with a value, then map
+  to (rank − 1)/(n − 1) − 0.5 ∈ [−0.5, 0.5]; 0 if n = 1.
+- Market features: z_t = (x_t − mean of x_s) / std of x_s over past days s < t only, with s
+  starting at the sample floor 1963-07-01 (consistent with excluding the thin 1926–63
+  portfolios, decision D3), and missing until 252 past days exist. Decision (Kouki,
+  2026-11-08). So market features are missing in the first sample year (1963-07 to 1964-07).
+  This affects training data only, never a test year.
+
+Nothing else changes: same models, grids, splits, hypotheses, metrics and presentation rules.

@@ -68,3 +68,29 @@ Dated record of every "why X not Y". The canonical, running log lives in `CLAUDE
 - **Trial accounting logged both ways.** Each row has `n_inner_trials` (configs compared) and
   `n_inner_fits` (folds x configs x inner folds). Which one enters the Deflated Sharpe N is
   decided in P8 and disclosed; logging both means no rerun is needed.
+
+## P4 (2026-11-08)
+
+- **Feature count: 11 per-asset features, 14 in total (PREREGISTRATION Amendment 1).** PLAN §5.4
+  and the frozen pre-registration list 11 per-asset features but call them "10" (and the input
+  a "13-feature vector"). Kouki chose to keep the list as written. Alternatives were to drop
+  `ret_252` (Spearman 0.955 with `mom_12_1` on dev data) or `ret_5` (close to baseline B4).
+  The amendment was appended, not edited in, before any feature matrix was built.
+- **Market z-scores start at the 1963-07-01 sample floor** with 252 past days required
+  (Kouki), consistent with excluding the thin 1926–63 portfolios (D3). The alternative,
+  starting in 1926, would let 1930s thin-portfolio dispersion set the scale.
+- **Exact feature formulas are pre-registered** (Amendment 1 table): daily volatility (not
+  annualised; ranks are scale-free), beta on raw daily returns against (Mkt-RF)+RF, and drawdown
+  measured from the window start.
+- **XGBoost final refit tree count = mean early-stopping round of the inner folds.** The plan
+  asks for early stopping on the inner validation fold and then a refit on the whole training
+  window, which has no validation data. The refit uses the selected config's mean best
+  iteration (+1) over its 3 inner folds; it is logged per fold in `trials.json`.
+- **Synthetic planted leak = the first earned day's return (`shift(-2)` with lag 1).** PLAN
+  §8.2's L2 (`shift(-1)`) is the close t → t+1 return, which a lag-1 strategy never earns; on
+  noise data it gives IC −0.001 (no inflation), while `shift(-2)` gives IC 0.43. Both are caught
+  by the K2 check. The L2 definition for the leak lab is to be confirmed with Kouki in P6.
+- **P4 dev runs are the 4 pre-registered trials, run once** (ridge and XGB, expanding and
+  rolling; `tasks.py dev-models`). Determinism was checked on real data without logging extra
+  trials (fold-1 XGB fit twice, bit-identical). The dev table is generated from the log, and
+  each row is checked against its logged net Sharpe before it is printed.

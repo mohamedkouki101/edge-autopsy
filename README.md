@@ -11,8 +11,14 @@ will lead with the result, in plain words, once the sealed hold-out is opened
 ## Pre-registration
 
 Hypotheses, thresholds, dates and model grids were frozen on 2026-11-08, before any ML model
-was trained: [`PREREGISTRATION.md`](PREREGISTRATION.md), sha256 `12baff06bf23602267e02ab99ca1c6a68d621e9a9af16e2dd00491a390b08d1b`
-(recorded in `PREREGISTRATION.lock`; check with `uv run python tasks.py prereg`).
+was trained: [`PREREGISTRATION.md`](PREREGISTRATION.md). Changes are appended as dated
+amendments, never edits; `PREREGISTRATION.lock` keeps every version
+(check with `uv run python tasks.py prereg`).
+
+| Version | sha256 | What |
+|---|---|---|
+| v1 | `12baff06bf23602267e02ab99ca1c6a68d621e9a9af16e2dd00491a390b08d1b` | original freeze |
+| amendment-1 (current) | `b6ca9ec52f425444dcb2f8bb6bda365b19bba24c9602c9d711b2d4f7fcd0b6df` | feature count 13 → 14 and exact feature definitions, before any feature matrix was built |
 
 ## Disclaimer
 

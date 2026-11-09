@@ -118,6 +118,9 @@ class LearnedModel:
     configs: list[dict]  # the pre-declared grid (<= 24)
     features: Callable[[Universe], pd.DataFrame]  # long (date, asset) frame, data <= t
     params: dict = field(default_factory=dict)  # fixed settings outside the grid
+    # best trial -> params for the final refit on the whole training window (e.g. XGB tree
+    # count from inner early stopping); None = the selected config as is
+    refit_params: Callable[[dict], dict] | None = None
 
 
 def run_hash(cfg: ExperimentCfg, model: str, params: dict) -> str:
@@ -149,7 +152,8 @@ def _walk_forward_scores(model: LearnedModel, u: Universe, weekly, labels, cfg, 
         res = tune(model.factory, X, y, f, days, cfg.split, model.configs)
         tr = X.index.get_level_values("date").isin(f.train_dates) & y.notna().to_numpy()
         te = X.index.get_level_values("date").isin(f.test_dates)
-        m = model.factory(res.best_params)
+        refit = model.refit_params(res.best_trial) if model.refit_params else res.best_params
+        m = model.factory(refit)
         m.fit(X[tr], y[tr], None, None)  # refit on the whole (purged) training window
         preds.append(pd.Series(m.predict(X[te]), index=X.index[te]))
         log.append(
@@ -158,6 +162,7 @@ def _walk_forward_scores(model: LearnedModel, u: Universe, weekly, labels, cfg, 
                 "test_end": f"{f.test_dates[-1]:%Y-%m-%d}",
                 "train_end": f"{f.train_dates[-1]:%Y-%m-%d}",
                 "best_params": res.best_params,
+                "refit_params": refit,
                 "trials": res.trials,
             }
         )

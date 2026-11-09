@@ -29,7 +29,11 @@ MAX_CONFIGS = 24  # fairness rule: same tuning budget for every model (PLAN §6)
 @dataclass(frozen=True)
 class TuneResult:
     best_params: dict
-    trials: list[dict]  # one per config: params, inner_ic (per fold), mean_ic
+    trials: list[dict]  # one per config: params, inner_ic (per fold), mean_ic, fit_info
+
+    @property
+    def best_trial(self) -> dict:
+        return next(t for t in self.trials if t["params"] == self.best_params)
 
 
 def grid(spec: dict[str, list]) -> list[dict]:
@@ -62,12 +66,15 @@ def tune(
     splits = [(part(f.train_dates), part(f.test_dates)) for f in inner]
     trials = []
     for params in configs:
-        ics = []
+        ics, info = [], []
         for (X_tr, y_tr), (X_va, y_va) in splits:
             model = factory(params)
             model.fit(X_tr, y_tr, X_va, y_va)
             ics.append(float(rank_ic(model.predict(X_va), y_va).mean()))
-        trials.append({"params": params, "inner_ic": ics, "mean_ic": float(np.mean(ics))})
+            info.append(getattr(model, "fit_info_", None))  # e.g. XGB early-stopping round
+        trials.append(
+            {"params": params, "inner_ic": ics, "mean_ic": float(np.mean(ics)), "fit_info": info}
+        )
     scores = np.array([t["mean_ic"] for t in trials])
     if np.isnan(scores).all():
         raise ValueError("every config has an undefined inner IC (constant predictions?)")

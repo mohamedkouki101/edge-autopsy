@@ -69,7 +69,11 @@ def test_sealed_error_is_a_permission_error():
 
 def test_default_guard_uses_the_project_preregistration(monkeypatch):
     monkeypatch.setenv("UNSEAL", "I_ACCEPT")
-    assert holdout_guard().startswith("12baff06bf23")
+    import json
+    from pathlib import Path
+
+    lock = Path(__file__).resolve().parents[2] / "PREREGISTRATION.lock"
+    assert holdout_guard() == json.loads(lock.read_text())["versions"][-1]["sha256"]
 
 
 # ---------------------------------------------------------------- loaders call it

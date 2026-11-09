@@ -110,3 +110,17 @@ def test_tasks_prereg_command_verifies(capsys):
     spec.loader.exec_module(tasks)
     assert tasks.main(["prereg"]) == 0
     assert "verified" in capsys.readouterr().out
+
+
+def test_project_preregistration_history_is_append_only():
+    """Every version in the real lock is a prefix of the current file (nothing rewritten)."""
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[2]
+    data = (root / "PREREGISTRATION.md").read_bytes().replace(b"\r\n", b"\n")
+    versions = json.loads((root / "PREREGISTRATION.lock").read_text())["versions"]
+    assert versions[0]["sha256"].startswith("12baff06bf23")  # the original v1 freeze
+    import hashlib
+
+    for v in versions:
+        assert hashlib.sha256(data[: v["n_bytes"]]).hexdigest() == v["sha256"], v["label"]
